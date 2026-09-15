@@ -2,6 +2,7 @@
 #include <vector>
 #include <chrono>
 #include <future>
+#include <algorithm>
 #include <exception>
 
 class Clicker {
@@ -81,13 +82,30 @@ int main(int argc, char* argv[]) {
   constexpr size_t size = 100000000;
   const data_t values(size, 1);
 
-  Clicker cl;
-  const value_t result = calculateParallel(values, threadCount);
-  const double total = cl.millisec();
+  constexpr size_t measurementCount = 5;
+  constexpr size_t medianIndex = measurementCount / 2;
+
+  std::vector<double> times;
+  times.reserve(measurementCount);
+  value_t finalResult = 0;
+
+  try {
+    for (size_t i = 0; i < measurementCount; ++i) {
+      Clicker cl;
+      finalResult = calculateParallel(values, threadCount);
+      times.push_back(cl.millisec());
+    }
+  } catch (const std::exception& e) {
+    std::cerr << "Error of calculation: " << e.what() << "\n";
+    return 2;
+  }
+
+  std::sort(times.begin(), times.end());
+  const double medianTime = times[medianIndex];
 
   std::cout << "Threads: " << threadCount
-            << "\nSum: " << result
-            << "\nTime: " << total << " ms\n";
+            << "\nSum: " << finalResult
+            << "\nTime: " << medianTime << " ms\n";
 
   return 0;
 }

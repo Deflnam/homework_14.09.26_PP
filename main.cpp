@@ -22,6 +22,14 @@ private:
 using data_t = std::vector<unsigned long long>;
 using value_t = data_t::value_type;
 
+value_t workerSum(const data_t& data, size_t start, size_t end) {
+  value_t sum = 0;
+  for (size_t i = start; i < end; ++i) {
+    sum += data[i];
+  }
+  return sum;
+}
+
 int main() {
   return 0;
 }

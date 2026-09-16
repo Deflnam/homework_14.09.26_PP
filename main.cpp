@@ -45,7 +45,7 @@ value_t calculateParallel(const data_t& data, size_t threadCount) {
     const size_t currentSize = baseSize + (i < remainder ? 1 : 0);
     const size_t currEnd = currStart + currentSize;
 
-    futures.push_back(
+    futures.emplace_back(
       std::async(std::launch::async, workerSum, std::cref(data), currStart, currEnd)
     );
 

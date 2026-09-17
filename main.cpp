@@ -1,39 +1,47 @@
 #include <iostream>
-#include <vector>
-#include <chrono>
-#include <future>
 #include <algorithm>
+#include <chrono>
 #include <exception>
+#include <future>
+#include <vector>
 
-class Clicker {
+class Clicker
+{
 public:
-  Clicker() :
-    start_(std::chrono::steady_clock::now())
-  {}
-
-  double millisec() const {
-    using std::chrono::duration_cast;
-    using std::chrono::milliseconds;
-    const auto t = std::chrono::steady_clock::now();
-    return static_cast<double>(duration_cast<milliseconds>(t - start_).count());
-  }
+  Clicker();
+  double getMillisec() const;
 
 private:
   std::chrono::steady_clock::time_point start_;
 };
 
+Clicker::Clicker():
+  start_(std::chrono::steady_clock::now())
+{}
+
+double Clicker::getMillisec() const
+{
+  using std::chrono::duration_cast;
+  using std::chrono::milliseconds;
+  const auto t = std::chrono::steady_clock::now();
+  return static_cast<double>(duration_cast<milliseconds>(t - start_).count());
+}
+
 using data_t = std::vector<unsigned long long>;
 using value_t = data_t::value_type;
 
-value_t workerSum(const data_t& data, size_t start, size_t end) {
+value_t workerSum(const data_t &data, size_t start, size_t end)
+{
   value_t sum = 0;
-  for (size_t i = start; i < end; ++i) {
+  for (size_t i = start; i < end; ++i)
+  {
     sum += data[i];
   }
   return sum;
 }
 
-value_t calculateParallel(const data_t& data, size_t threadCount) {
+value_t calculateParallel(const data_t &data, size_t threadCount)
+{
   const size_t baseSize = data.size() / threadCount;
   const size_t remainder = data.size() % threadCount;
 
@@ -41,7 +49,8 @@ value_t calculateParallel(const data_t& data, size_t threadCount) {
   futures.reserve(threadCount);
 
   size_t currStart = 0;
-  for (size_t i = 0; i < threadCount; ++i) {
+  for (size_t i = 0; i < threadCount; ++i)
+  {
     const size_t currentSize = baseSize + (i < remainder ? 1 : 0);
     const size_t currEnd = currStart + currentSize;
 
@@ -53,28 +62,36 @@ value_t calculateParallel(const data_t& data, size_t threadCount) {
   }
 
   value_t totalSum = 0;
-  for (size_t i = 0; i < threadCount; ++i) {
+  for (size_t i = 0; i < threadCount; ++i)
+  {
     totalSum += futures[i].get();
   }
 
   return totalSum;
 }
 
-int main(int argc, char* argv[]) {
-  if (argc != 2) {
+int main(int argc, char *argv[])
+{
+  const int expectedArgsCount = 2;
+  if (argc != expectedArgsCount)
+  {
     std::cerr << "Error: please enter thread count as argument\n";
     return 1;
   }
 
   size_t threadCount = 0;
-  try {
+  try
+  {
     threadCount = std::stoull(argv[1]);
-  } catch (const std::exception& e) {
+  }
+  catch (const std::exception &e)
+  {
     std::cerr << "Error of parsing argument: " << e.what() << "\n";
     return 1;
   }
 
-  if (threadCount == 0) {
+  if (threadCount == 0)
+  {
     std::cerr << "Error: thread count must be more than zero\n";
     return 1;
   }
@@ -89,13 +106,17 @@ int main(int argc, char* argv[]) {
   times.reserve(measurementCount);
   value_t finalResult = 0;
 
-  try {
-    for (size_t i = 0; i < measurementCount; ++i) {
+  try
+  {
+    for (size_t i = 0; i < measurementCount; ++i)
+    {
       Clicker cl;
       finalResult = calculateParallel(values, threadCount);
-      times.push_back(cl.millisec());
+      times.push_back(cl.getMillisec());
     }
-  } catch (const std::exception& e) {
+  }
+  catch (const std::exception &e)
+  {
     std::cerr << "Error of calculation: " << e.what() << "\n";
     return 2;
   }
